@@ -275,4 +275,152 @@
             }
         }
 
-        function cambiarPantalla(pantallaId
+        function cambiarPantalla(pantallaId, elementoMenu) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('pantalla-' + pantallaId).classList.add('active');
+            elementoMenu.classList.add('active');
+            actualizarUI();
+        }
+
+        function abrirModal(id) { document.getElementById(id).style.display = 'block'; }
+        function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        function actualizarUI() {
+            renderListas('gastos'); renderListas('ingresos'); renderListas('patrimonio');
+            renderCategorias(); renderProvisiones();
+        }
+
+        function renderListas(tipo) {
+            const contenedor = document.getElementById('lista-' + tipo);
+            contenedor.innerHTML = '';
+            const listaOrdenada = [...datos[tipo]].sort((a,b) => b.id - a.id);
+            if(listaOrdenada.length === 0) {
+                contenedor.innerHTML = '<p style="color:var(--text-muted); text-align:center;">No hay registros aún.</p>'; return;
+            }
+
+            listaOrdenada.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                let montoClase = tipo === 'gastos' ? 'gasto' : tipo === 'ingresos' ? 'ingreso' : 'neutro';
+                let prefijo = item.moneda === 'USD' ? '$' : '₡';
+                let montoDisplay = item.moneda === 'USD' ? `${prefijo}${item.monto}` : formatoMoneda(item.monto);
+                
+                let titulo = tipo === 'patrimonio' ? item.inst : item.desc;
+                let subtitulo = tipo === 'patrimonio' ? (item.desc || "Aporte") : (item.cat || '');
+                
+                card.innerHTML = `
+                    <div class="card-title"><span>${titulo}</span><span class="monto ${montoClase}">${montoDisplay}</span></div>
+                    <div class="card-subtitle" style="margin-bottom:0;">
+                        ${subtitulo ? `<span>${subtitulo}</span> • ` : ''} <span>${item.fecha || item.moneda}</span>
+                    </div>
+                `;
+                contenedor.appendChild(card);
+            });
+        }
+
+        function guardarRegistro(tipo) {
+            let prefijo = tipo === 'gastos' ? 'g' : tipo === 'ingresos' ? 'i' : 'p';
+            let desc = document.getElementById(prefijo + '-desc').value;
+            let monto = parseFloat(document.getElementById(prefijo + '-monto').value);
+            
+            if(!monto || (tipo !== 'patrimonio' && !desc)) { alert("Completa los campos principales."); return; }
+
+            let nuevo = { id: Date.now(), monto };
+            if(tipo === 'gastos') {
+                nuevo.desc = desc; nuevo.cat = document.getElementById('g-cat').value; nuevo.fecha = document.getElementById('g-fecha').value;
+            } else if(tipo === 'ingresos') {
+                nuevo.desc = desc; nuevo.cat = document.getElementById('i-cat').value; nuevo.fecha = document.getElementById('i-fecha').value;
+            } else if(tipo === 'patrimonio') {
+                nuevo.inst = document.getElementById('p-inst').value; nuevo.desc = desc; nuevo.moneda = document.getElementById('p-moneda').value; nuevo.fecha = new Date().toISOString().split('T')[0];
+            }
+
+            datos[tipo].push(nuevo);
+            localStorage.setItem('crs_' + tipo, JSON.stringify(datos[tipo]));
+            
+            document.getElementById(prefijo + '-monto').value = '';
+            if(document.getElementById(prefijo + '-desc')) document.getElementById(prefijo + '-desc').value = '';
+            cerrarModal('modal-' + tipo);
+            actualizarUI();
+        }
+
+        // ESTIMADOR CCSS
+        function calcularProyecciones() {
+            let sal = parseFloat(document.getElementById('proy-salario').value) || 0;
+            let ase = parseFloat(document.getElementById('proy-aseccss').value) || 0;
+            let frap = parseFloat(document.getElementById('proy-frap').value) || 0;
+            
+            // Guardar inputs para que no se borren al cerrar la app
+            datos.proyecciones = { salario: sal, aseccss: ase, frap: frap };
+            localStorage.setItem('crs_proyecciones', JSON.stringify(datos.proyecciones));
+
+            // Fórmulas
+            let aguinaldo = sal; 
+            let escolar = sal * 0.0833 * 12; // Aprox un salario
+            let vacaciones = sal; // Valor 30 días
+            let divAseccss = ase * 0.06; // Estimado histórico 6%
+            let divFrap = frap * 0.055; // Estimado histórico 5.5%
+
+            document.getElementById('res-aguinaldo').innerText = sal > 0 ? formatoMoneda(aguinaldo) : '₡0';
+            document.getElementById('res-escolar').innerText = sal > 0 ? formatoMoneda(escolar) : '₡0';
+            document.getElementById('res-vacaciones').innerText = sal > 0 ? formatoMoneda(vacaciones) : '₡0';
+            document.getElementById('res-aseccss').innerText = ase > 0 ? formatoMoneda(divAseccss) : '₡0';
+            document.getElementById('res-frap').innerText = frap > 0 ? formatoMoneda(divFrap) : '₡0';
+        }
+
+        // CATEGORÍAS
+        function renderCategorias() {
+            const selectCat = document.getElementById('g-cat'); selectCat.innerHTML = '';
+            datos.categorias.sort().forEach(cat => { selectCat.innerHTML += `<option value="${cat}">${cat}</option>`; });
+            const divCat = document.getElementById('lista-categorias-ui'); divCat.innerHTML = '';
+            datos.categorias.forEach((cat, index) => {
+                divCat.innerHTML += `<div class="cat-item"><span>${cat}</span> <span class="cat-del" onclick="borrarCategoria(${index})">X</span></div>`;
+            });
+        }
+        function agregarCategoria() {
+            let nueva = document.getElementById('nueva-cat').value.trim();
+            if(nueva && !datos.categorias.includes(nueva)) {
+                datos.categorias.push(nueva); localStorage.setItem('crs_categorias', JSON.stringify(datos.categorias));
+                document.getElementById('nueva-cat').value = ''; actualizarUI();
+            }
+        }
+        function borrarCategoria(index) {
+            datos.categorias.splice(index, 1); localStorage.setItem('crs_categorias', JSON.stringify(datos.categorias)); actualizarUI();
+        }
+
+        // PEDIAHORRO
+        function registrarAportePediahorro() {
+            if(confirm("Se registrará un gasto de ₡100,000 y se sumará 1 mes de provisiones. ¿Continuar?")) {
+                datos.gastos.push({ id: Date.now(), desc: "Transferencia PediAhorro", monto: 100000, cat: "Ahorro/Inversión", fecha: new Date().toISOString().split('T')[0] });
+                localStorage.setItem('crs_gastos', JSON.stringify(datos.gastos));
+                datos.aportesPediAhorro++; localStorage.setItem('crs_aportes', datos.aportesPediAhorro);
+                actualizarUI();
+            }
+        }
+
+        function renderProvisiones() {
+            document.getElementById('contador-aportes').innerText = datos.aportesPediAhorro;
+            const contenedor = document.getElementById('lista-provisiones'); contenedor.innerHTML = '';
+            let tc = datos.tipoCambio || 515.00; 
+            const cuotaBMI_CRC = 69.42 * tc;
+            
+            const metas = [
+                { nombre: "Seguro BMI", anual: "USD $833", metaNum: cuotaBMI_CRC * 12, cuotaMes: cuotaBMI_CRC },
+                { nombre: "Seguro Quálitas", anual: "₡450,000", metaNum: 450000, cuotaMes: 37500 },
+                { nombre: "Marchamo", anual: "₡263,000", metaNum: 263000, cuotaMes: 21916 }
+            ];
+
+            metas.forEach(meta => {
+                let ahorrado = meta.cuotaMes * datos.aportesPediAhorro;
+                let porcentaje = Math.min((ahorrado / meta.metaNum) * 100, 100);
+                contenedor.innerHTML += `
+                    <div class="card">
+                        <div class="card-title"><span>${meta.nombre}</span><span class="monto neutro">${formatoMoneda(ahorrado)}</span></div>
+                        <div class="card-subtitle">Meta Anual: ${meta.anual} <br>Destino mensual: ${formatoMoneda(meta.cuotaMes)}</div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:${porcentaje}%"></div></div>
+                    </div>`;
+            });
+        }
+    </script>
+</body>
+</html>
