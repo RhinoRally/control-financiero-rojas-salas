@@ -5,64 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Control Financiero Rojas Salas</title>
     <style>
-        /* Diseño visual optimizado para móviles (Modo Oscuro) */
         :root {
-            --bg-color: #000000;
-            --card-bg: #1C1C1E;
-            --text-main: #FFFFFF;
-            --text-muted: #8E8E93;
-            --accent: #E91E63; /* Color rosa similar al de Glide */
-            --nav-bg: #121212;
-            --border: #2C2C2E;
+            --bg-color: #000000; --card-bg: #1C1C1E; --text-main: #FFFFFF; --text-muted: #8E8E93;
+            --accent: #E91E63; --ingreso: #34C759; --nav-bg: #121212; --border: #2C2C2E;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 80px; }
         
-        /* Encabezado */
         header { background-color: var(--card-bg); padding: 15px; text-align: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;}
         h1 { font-size: 1.2rem; font-weight: 600; }
         
-        /* Contenedores de pantallas */
         .screen { display: none; padding: 15px; }
         .screen.active { display: block; }
         
-        /* Tarjetas (Cards) */
         .card { background-color: var(--card-bg); border-radius: 10px; padding: 15px; margin-bottom: 12px; border: 1px solid var(--border); }
         .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 5px; display: flex; justify-content: space-between; }
         .card-subtitle { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px; }
-        .monto { font-weight: bold; color: var(--accent); font-size: 1.2rem; }
         
-        /* Botón Flotante (Add) */
+        .monto { font-weight: bold; font-size: 1.1rem; }
+        .monto.gasto { color: var(--accent); }
+        .monto.ingreso { color: var(--ingreso); }
+        .monto.neutro { color: #0A84FF; }
+        
         .btn-add { background-color: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 1rem; cursor: pointer; float: right; margin-bottom: 15px;}
+        .btn-add.ingreso-btn { background-color: var(--ingreso); }
+        .btn-add.patri-btn { background-color: #0A84FF; }
+        .btn-full { width: 100%; background-color: #0A84FF; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 15px;}
         
-        /* Formularios y Cajas de texto */
         .input-group { margin-bottom: 15px; }
         label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
         input, select { width: 100%; background-color: #2C2C2E; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 1rem; }
-        input:focus, select:focus { outline: 1px solid var(--accent); }
         
-        .btn-submit { width: 100%; background-color: var(--accent); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 10px;}
+        .btn-submit { width: 100%; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 10px;}
+        .bg-gasto { background-color: var(--accent); }
+        .bg-ingreso { background-color: var(--ingreso); }
+        .bg-patri { background-color: #0A84FF; }
         
-        /* Menú de Navegación Inferior */
         nav { position: fixed; bottom: 0; width: 100%; background-color: var(--nav-bg); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0 20px 0; z-index: 100;}
-        .nav-item { color: var(--text-muted); text-align: center; font-size: 0.8rem; cursor: pointer; flex: 1;}
+        .nav-item { color: var(--text-muted); text-align: center; font-size: 0.75rem; cursor: pointer; flex: 1;}
         .nav-item.active { color: var(--accent); font-weight: bold; }
-        .nav-icon { font-size: 1.5rem; display: block; margin-bottom: 3px; }
+        .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 3px; }
         
-        /* Panel del BCCR */
-        .bccr-panel { background-color: #1A1A24; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid var(--accent); }
-        .bccr-panel input { background-color: #000; margin-top: 10px;}
+        .bccr-panel { background-color: #1A1A24; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #0A84FF; }
         
-        /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200; padding: 20px; overflow-y: auto;}
         .modal-content { background: var(--bg-color); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-top: 10px;}
         .close-modal { color: var(--text-muted); float: right; font-size: 28px; font-weight: bold; cursor: pointer; margin-top: -10px;}
         
-        /* Reportes */
-        .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .report-box { background: var(--card-bg); padding: 15px; border-radius: 10px; text-align: center; }
-        .report-box h3 { font-size: 0.9rem; color: var(--text-muted); }
-        .report-box p { font-size: 1.2rem; font-weight: bold; color: white; margin-top: 5px; }
+        .cat-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border);}
+        .cat-del { color: var(--accent); cursor: pointer; font-weight: bold;}
+
+        .progress-bar { width: 100%; background-color: #2C2C2E; border-radius: 5px; height: 10px; margin-top: 10px; overflow: hidden;}
+        .progress-fill { height: 100%; background-color: #34C759; width: 0%; transition: width 0.3s;}
     </style>
 </head>
 <body>
@@ -71,252 +65,337 @@
         <h1>App Financiera CCSS</h1>
     </header>
 
-    <!-- PANTALLA: GASTOS ORDINARIOS -->
+    <!-- GASTOS -->
     <div id="pantalla-gastos" class="screen active">
-        <button class="btn-add" onclick="abrirModalGasto()">+ Add</button>
+        <button class="btn-add" onclick="abrirModal('modal-gasto')">+ Gasto</button>
         <div style="clear: both; margin-bottom: 10px;"></div>
         <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Gastos Ordinarios</h2>
         <div id="lista-gastos"></div>
     </div>
 
-    <!-- PANTALLA: PROVISIONES Pediahorro -->
+    <!-- INGRESOS -->
+    <div id="pantalla-ingresos" class="screen">
+        <button class="btn-add ingreso-btn" onclick="abrirModal('modal-ingreso')">+ Ingreso</button>
+        <div style="clear: both; margin-bottom: 10px;"></div>
+        <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Registro de Ingresos</h2>
+        <div id="lista-ingresos"></div>
+    </div>
+
+    <!-- PROVISIONES -->
     <div id="pantalla-provisiones" class="screen">
         <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Provisiones PediAhorro</h2>
         
         <div class="bccr-panel">
-            <label>Tipo de Cambio BCCR (Venta):</label>
-            <input type="number" id="input-bccr" placeholder="Ej. 515.00" onchange="guardarBCCR()">
+            <label>Tipo de Cambio (Aut. Hacienda / Manual):</label>
+            <input type="number" id="input-bccr" placeholder="Consultando..." onchange="guardarBCCR()">
         </div>
+
+        <button class="btn-full" onclick="registrarAportePediahorro()">➕ Registrar Aporte Mensual (₡100,000)</button>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; text-align: center;">Meses aportados: <span id="contador-aportes" style="color:white; font-weight:bold;">0</span></p>
 
         <div id="lista-provisiones"></div>
     </div>
 
-    <!-- PANTALLA: REPORTES -->
-    <div id="pantalla-reportes" class="screen">
-        <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Reportes de Gastos</h2>
-        <div class="report-grid">
-            <div class="report-box">
-                <h3>Este Mes</h3>
-                <p id="rep-mes">₡0</p>
-            </div>
-            <div class="report-box">
-                <h3>Este Año</h3>
-                <p id="rep-anio">₡0</p>
-            </div>
-        </div>
+    <!-- PATRIMONIO / INVERSIONES -->
+    <div id="pantalla-patrimonio" class="screen">
+        <button class="btn-add patri-btn" onclick="abrirModal('modal-patri')">+ Activo</button>
+        <div style="clear: both; margin-bottom: 10px;"></div>
+        <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Patrimonio e Inversiones</h2>
+        <div id="lista-patrimonio"></div>
     </div>
 
-    <!-- NAVEGACIÓN INFERIOR -->
+    <!-- CATEGORÍAS Y AJUSTES -->
+    <div id="pantalla-ajustes" class="screen">
+        <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Gestión de Categorías</h2>
+        <div class="input-group" style="display:flex; gap:10px;">
+            <input type="text" id="nueva-cat" placeholder="Nueva categoría...">
+            <button onclick="agregarCategoria()" style="background:var(--ingreso); color:white; border:none; border-radius:8px; padding:0 15px; font-weight:bold;">Añadir</button>
+        </div>
+        <div class="card" id="lista-categorias-ui"></div>
+    </div>
+
+    <!-- NAVEGACIÓN -->
     <nav>
         <div class="nav-item active" onclick="cambiarPantalla('gastos', this)">
-            <span class="nav-icon">🧾</span>Gastos
+            <span class="nav-icon">📉</span>Gastos
+        </div>
+        <div class="nav-item" onclick="cambiarPantalla('ingresos', this)">
+            <span class="nav-icon">📈</span>Ingresos
         </div>
         <div class="nav-item" onclick="cambiarPantalla('provisiones', this)">
-            <span class="nav-icon">🏦</span>Provisiones
+            <span class="nav-icon">🏦</span>Ahorro
         </div>
-        <div class="nav-item" onclick="cambiarPantalla('reportes', this)">
-            <span class="nav-icon">📊</span>Reportes
+        <div class="nav-item" onclick="cambiarPantalla('patrimonio', this)">
+            <span class="nav-icon">💰</span>Patrimonio
+        </div>
+        <div class="nav-item" onclick="cambiarPantalla('ajustes', this)">
+            <span class="nav-icon">⚙️</span>Ajustes
         </div>
     </nav>
 
-    <!-- MODAL AGREGAR GASTO -->
+    <!-- MODALES -->
+    <!-- Modal Gasto -->
     <div id="modal-gasto" class="modal">
         <div class="modal-content">
-            <span class="close-modal" onclick="cerrarModalGasto()">&times;</span>
+            <span class="close-modal" onclick="cerrarModal('modal-gasto')">&times;</span>
             <h2 style="margin-bottom: 20px;">Añadir Gasto</h2>
-            
             <div class="input-group">
-                <label>Concepto / Descripción</label>
-                <input type="text" id="g-desc" placeholder="Ej. Útiles escolares">
+                <label>Concepto</label>
+                <input type="text" id="g-desc">
             </div>
             <div class="input-group">
                 <label>Monto (₡)</label>
-                <input type="number" id="g-monto" placeholder="0.00">
+                <input type="number" id="g-monto">
             </div>
             <div class="input-group">
                 <label>Categoría</label>
-                <select id="g-cat">
-                    <option>Educación</option>
-                    <option>Alimentación en casa</option>
-                    <option>Alimentación fuera de casa</option>
-                    <option>Paseos o viajes</option>
-                    <option>Salud y Medicamentos</option>
-                    <option>Transporte</option>
-                    <option>Otros</option>
-                </select>
+                <select id="g-cat"></select>
             </div>
             <div class="input-group">
                 <label>Fecha</label>
                 <input type="date" id="g-fecha">
             </div>
-            
-            <button class="btn-submit" onclick="guardarGasto()">Guardar Gasto</button>
+            <button class="btn-submit bg-gasto" onclick="guardarRegistro('gastos')">Guardar Gasto</button>
+        </div>
+    </div>
+
+    <!-- Modal Ingreso -->
+    <div id="modal-ingreso" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="cerrarModal('modal-ingreso')">&times;</span>
+            <h2 style="margin-bottom: 20px;">Añadir Ingreso</h2>
+            <div class="input-group"><label>Concepto (Ej. Salario CCSS)</label><input type="text" id="i-desc"></div>
+            <div class="input-group"><label>Monto (₡)</label><input type="number" id="i-monto"></div>
+            <div class="input-group"><label>Fecha</label><input type="date" id="i-fecha"></div>
+            <button class="btn-submit bg-ingreso" onclick="guardarRegistro('ingresos')">Guardar Ingreso</button>
+        </div>
+    </div>
+
+    <!-- Modal Patrimonio -->
+    <div id="modal-patri" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="cerrarModal('modal-patri')">&times;</span>
+            <h2 style="margin-bottom: 20px;">Añadir Activo/Inversión</h2>
+            <div class="input-group"><label>Instrumento (Ej. CDP, Fondo)</label><input type="text" id="p-desc"></div>
+            <div class="input-group"><label>Monto</label><input type="number" id="p-monto"></div>
+            <div class="input-group">
+                <label>Moneda</label>
+                <select id="p-moneda"><option>CRC</option><option>USD</option></select>
+            </div>
+            <button class="btn-submit bg-patri" onclick="guardarRegistro('patrimonio')">Guardar Patrimonio</button>
         </div>
     </div>
 
     <script>
-        // Lógica de Datos usando LocalStorage para que la info no se borre
+        // 1. GESTIÓN DE DATOS (LocalStorage)
+        let datos = {
+            gastos: JSON.parse(localStorage.getItem('crs_gastos')) || [],
+            ingresos: JSON.parse(localStorage.getItem('crs_ingresos')) || [],
+            patrimonio: JSON.parse(localStorage.getItem('crs_patrimonio')) || [],
+            categorias: JSON.parse(localStorage.getItem('crs_categorias')) || [
+                "Alimentación en casa", "Alimentación fuera de casa", "Educación", "Gas de casa", 
+                "Gasolina de carro", "Paseos o viajes", "Salud y Medicamentos", "Servicios Públicos", "Transporte", "Otros"
+            ],
+            aportesPediAhorro: parseInt(localStorage.getItem('crs_aportes')) || 0,
+            tipoCambio: parseFloat(localStorage.getItem('crs_bccr')) || 515.00
+        };
+
+        const formatoMoneda = (monto) => new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(monto);
         
-        // 1. Inicializar Datos Base (Provisiones)
-        let provisionesBase = [
-            { id: 1, concepto: "Seguro BMI", anual: 833.00, cuota: 69.42, moneda: "USD", inicio: "2026-01-01", limite: "20/jun" },
-            { id: 2, concepto: "Seguro Quálitas", anual: 450000, cuota: 37500, moneda: "CRC", inicio: "2026-01-01", limite: "26/jul" },
-            { id: 3, concepto: "Marchamo", anual: 263000, cuota: 21916, moneda: "CRC", inicio: "2026-01-01", limite: "31/dic" }
-        ];
+        // 2. INICIALIZACIÓN
+        window.onload = () => {
+            obtenerTipoCambio();
+            document.getElementById('input-bccr').value = datos.tipoCambio;
+            document.getElementById('g-fecha').valueAsDate = new Date();
+            document.getElementById('i-fecha').valueAsDate = new Date();
+            actualizarUI();
+        };
 
-        // Cargar datos guardados
-        let gastos = JSON.parse(localStorage.getItem('crs_gastos')) || [];
-        let tipoCambio = parseFloat(localStorage.getItem('crs_bccr')) || 515.00;
+        // 3. OBTENER TIPO DE CAMBIO (API Hacienda CR)
+        async function obtenerTipoCambio() {
+            try {
+                const response = await fetch('https://api.hacienda.go.cr/indicadores/tc');
+                const data = await response.json();
+                if(data && data.venta && data.venta.valor) {
+                    datos.tipoCambio = data.venta.valor;
+                    document.getElementById('input-bccr').value = datos.tipoCambio;
+                    guardarBCCR();
+                }
+            } catch (error) {
+                console.log("Usando tipo de cambio guardado o manual.");
+            }
+        }
 
-        // Configurar UI inicial
-        document.getElementById('input-bccr').value = tipoCambio;
-        document.getElementById('g-fecha').valueAsDate = new Date();
+        function guardarBCCR() {
+            datos.tipoCambio = parseFloat(document.getElementById('input-bccr').value) || 515.00;
+            localStorage.setItem('crs_bccr', datos.tipoCambio);
+            renderProvisiones();
+        }
 
-        // 2. Funciones de Navegación
+        // 4. NAVEGACIÓN Y UI
         function cambiarPantalla(pantallaId, elementoMenu) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            
             document.getElementById('pantalla-' + pantallaId).classList.add('active');
             elementoMenu.classList.add('active');
-
-            if(pantallaId === 'gastos') renderGastos();
-            if(pantallaId === 'provisiones') renderProvisiones();
-            if(pantallaId === 'reportes') calcularReportes();
+            actualizarUI();
         }
 
-        // 3. Funciones del BCCR
-        function guardarBCCR() {
-            tipoCambio = parseFloat(document.getElementById('input-bccr').value) || 0;
-            localStorage.setItem('crs_bccr', tipoCambio);
-            renderProvisiones(); // Recalcula si estás en esa pantalla
+        function abrirModal(id) { document.getElementById(id).style.display = 'block'; }
+        function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        // 5. RENDERIZADO GENERAL
+        function actualizarUI() {
+            renderListas('gastos');
+            renderListas('ingresos');
+            renderListas('patrimonio');
+            renderCategorias();
+            renderProvisiones();
         }
 
-        // 4. Lógica de Provisiones (Cálculo del Saldo Teórico)
-        function renderProvisiones() {
-            const contenedor = document.getElementById('lista-provisiones');
+        function renderListas(tipo) {
+            const contenedor = document.getElementById('lista-' + tipo);
             contenedor.innerHTML = '';
-            const hoy = new Date();
+            
+            const listaOrdenada = [...datos[tipo]].sort((a,b) => b.id - a.id); // Más recientes primero
 
-            provisionesBase.forEach(prov => {
-                // Calcular meses transcurridos
-                const fechaInicio = new Date(prov.inicio);
-                const diasTranscurridos = (hoy - fechaInicio) / (1000 * 60 * 60 * 24);
-                let mesesTranscurridos = diasTranscurridos / 30.4;
-                if(mesesTranscurridos < 0) mesesTranscurridos = 0;
-
-                // Calcular saldo
-                let saldoAcumulado = prov.cuota * mesesTranscurridos;
-                
-                // Conversión si es en dólares
-                let montoMostrar = saldoAcumulado;
-                let simbolo = "₡";
-                
-                if(prov.moneda === "USD") {
-                    montoMostrar = saldoAcumulado * tipoCambio;
-                }
-
-                // Formatear moneda
-                let formateado = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(montoMostrar);
-
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <div class="card-title">
-                        <span>${prov.concepto}</span>
-                        <span style="font-size:0.8rem; color:var(--text-muted)">Límite: ${prov.limite}</span>
-                    </div>
-                    <div class="card-subtitle">Cuota mensual: ${prov.moneda === 'USD' ? '$' : '₡'}${prov.cuota}</div>
-                    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-                        <span style="font-size: 0.85rem; color:var(--text-muted);">Saldo Teórico Ideal:</span>
-                        <span class="monto">${formateado}</span>
-                    </div>
-                `;
-                contenedor.appendChild(card);
-            });
-        }
-
-        // 5. Lógica de Gastos Ordinarios
-        function abrirModalGasto() { document.getElementById('modal-gasto').style.display = 'block'; }
-        function cerrarModalGasto() { document.getElementById('modal-gasto').style.display = 'none'; }
-
-        function guardarGasto() {
-            const desc = document.getElementById('g-desc').value;
-            const monto = parseFloat(document.getElementById('g-monto').value);
-            const cat = document.getElementById('g-cat').value;
-            const fecha = document.getElementById('g-fecha').value;
-
-            if(!desc || !monto || !fecha) {
-                alert("Por favor, completa la descripción y el monto.");
+            if(listaOrdenada.length === 0) {
+                contenedor.innerHTML = '<p style="color:var(--text-muted); text-align:center;">No hay registros aún.</p>';
                 return;
             }
 
-            const nuevoGasto = { id: Date.now(), desc, monto, cat, fecha };
-            gastos.push(nuevoGasto);
-            localStorage.setItem('crs_gastos', JSON.stringify(gastos));
-            
-            // Limpiar formulario y cerrar
-            document.getElementById('g-desc').value = '';
-            document.getElementById('g-monto').value = '';
-            cerrarModalGasto();
-            renderGastos();
-        }
-
-        function renderGastos() {
-            const contenedor = document.getElementById('lista-gastos');
-            contenedor.innerHTML = '';
-            
-            // Ordenar por fecha más reciente
-            const gastosOrdenados = [...gastos].sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
-
-            if(gastosOrdenados.length === 0) {
-                contenedor.innerHTML = '<p style="color:var(--text-muted); text-align:center; margin-top:30px;">Aún no hay gastos registrados.</p>';
-                return;
-            }
-
-            gastosOrdenados.forEach(g => {
-                let formateado = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(g.monto);
+            listaOrdenada.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'card';
+                let montoClase = tipo === 'gastos' ? 'gasto' : tipo === 'ingresos' ? 'ingreso' : 'neutro';
+                let prefijo = item.moneda === 'USD' ? '$' : '₡';
+                let montoDisplay = item.moneda === 'USD' ? `${prefijo}${item.monto}` : formatoMoneda(item.monto);
+                
                 card.innerHTML = `
                     <div class="card-title">
-                        <span>${g.desc}</span>
-                        <span class="monto">${formateado}</span>
+                        <span>${item.desc}</span>
+                        <span class="monto ${montoClase}">${montoDisplay}</span>
                     </div>
                     <div class="card-subtitle" style="margin-bottom:0;">
-                        <span>${g.cat}</span> • <span>${g.fecha}</span>
+                        ${item.cat ? `<span>${item.cat}</span> • ` : ''} <span>${item.fecha || item.moneda}</span>
                     </div>
                 `;
                 contenedor.appendChild(card);
             });
         }
 
-        // 6. Lógica de Reportes
-        function calcularReportes() {
-            const hoy = new Date();
-            const mesActual = hoy.getMonth();
-            const anioActual = hoy.getFullYear();
+        // 6. GUARDAR REGISTROS (Gastos, Ingresos, Patrimonio)
+        function guardarRegistro(tipo) {
+            let prefijo = tipo === 'gastos' ? 'g' : tipo === 'ingresos' ? 'i' : 'p';
+            let desc = document.getElementById(prefijo + '-desc').value;
+            let monto = parseFloat(document.getElementById(prefijo + '-monto').value);
+            
+            if(!desc || !monto) { alert("Completa los campos."); return; }
 
-            let totalMes = 0;
-            let totalAnio = 0;
+            let nuevo = { id: Date.now(), desc, monto };
+            if(tipo === 'gastos') {
+                nuevo.cat = document.getElementById('g-cat').value;
+                nuevo.fecha = document.getElementById('g-fecha').value;
+            } else if(tipo === 'ingresos') {
+                nuevo.fecha = document.getElementById('i-fecha').value;
+            } else if(tipo === 'patrimonio') {
+                nuevo.moneda = document.getElementById('p-moneda').value;
+            }
 
-            gastos.forEach(g => {
-                const fechaGasto = new Date(g.fecha + "T00:00:00");
-                if (fechaGasto.getFullYear() === anioActual) {
-                    totalAnio += g.monto;
-                    if (fechaGasto.getMonth() === mesActual) {
-                        totalMes += g.monto;
-                    }
-                }
-            });
-
-            const fmt = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' });
-            document.getElementById('rep-mes').innerText = fmt.format(totalMes);
-            document.getElementById('rep-anio').innerText = fmt.format(totalAnio);
+            datos[tipo].push(nuevo);
+            localStorage.setItem('crs_' + tipo, JSON.stringify(datos[tipo]));
+            
+            document.getElementById(prefijo + '-desc').value = '';
+            document.getElementById(prefijo + '-monto').value = '';
+            cerrarModal('modal-' + tipo);
+            actualizarUI();
         }
 
-        // Iniciar
-        renderGastos();
+        // 7. CATEGORÍAS
+        function renderCategorias() {
+            // Actualizar select de gastos
+            const selectCat = document.getElementById('g-cat');
+            selectCat.innerHTML = '';
+            datos.categorias.sort().forEach(cat => {
+                selectCat.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+
+            // Actualizar UI de ajustes
+            const divCat = document.getElementById('lista-categorias-ui');
+            divCat.innerHTML = '';
+            datos.categorias.forEach((cat, index) => {
+                divCat.innerHTML += `<div class="cat-item"><span>${cat}</span> <span class="cat-del" onclick="borrarCategoria(${index})">X</span></div>`;
+            });
+        }
+
+        function agregarCategoria() {
+            let nueva = document.getElementById('nueva-cat').value.trim();
+            if(nueva && !datos.categorias.includes(nueva)) {
+                datos.categorias.push(nueva);
+                localStorage.setItem('crs_categorias', JSON.stringify(datos.categorias));
+                document.getElementById('nueva-cat').value = '';
+                actualizarUI();
+            }
+        }
+        function borrarCategoria(index) {
+            datos.categorias.splice(index, 1);
+            localStorage.setItem('crs_categorias', JSON.stringify(datos.categorias));
+            actualizarUI();
+        }
+
+        // 8. LÓGICA PEDIAHORRO
+        function registrarAportePediahorro() {
+            if(confirm("Esto registrará un gasto de ₡100,000 y sumará 1 mes al acumulado de ahorro. ¿Continuar?")) {
+                // Agregar el gasto global
+                datos.gastos.push({
+                    id: Date.now(), desc: "Transferencia PediAhorro", monto: 100000, 
+                    cat: "Ahorro/Inversión", fecha: new Date().toISOString().split('T')[0]
+                });
+                localStorage.setItem('crs_gastos', JSON.stringify(datos.gastos));
+                
+                // Sumar aporte
+                datos.aportesPediAhorro++;
+                localStorage.setItem('crs_aportes', datos.aportesPediAhorro);
+                
+                actualizarUI();
+            }
+        }
+
+        function renderProvisiones() {
+            document.getElementById('contador-aportes').innerText = datos.aportesPediAhorro;
+            const contenedor = document.getElementById('lista-provisiones');
+            contenedor.innerHTML = '';
+
+            // Definición de las 3 metas
+            const cuotaBMI_USD = 69.42; // $833 anual / 12
+            const cuotaBMI_CRC = cuotaBMI_USD * datos.tipoCambio;
+            
+            const metas = [
+                { nombre: "Seguro BMI", anual: "USD $833", metaNum: cuotaBMI_CRC * 12, cuotaMes: cuotaBMI_CRC },
+                { nombre: "Seguro Quálitas", anual: "₡450,000", metaNum: 450000, cuotaMes: 37500 },
+                { nombre: "Marchamo", anual: "₡263,000", metaNum: 263000, cuotaMes: 21916 }
+            ];
+
+            metas.forEach(meta => {
+                let ahorrado = meta.cuotaMes * datos.aportesPediAhorro;
+                let porcentaje = (ahorrado / meta.metaNum) * 100;
+                if(porcentaje > 100) porcentaje = 100;
+
+                contenedor.innerHTML += `
+                    <div class="card">
+                        <div class="card-title">
+                            <span>${meta.nombre}</span>
+                            <span class="monto neutro">${formatoMoneda(ahorrado)}</span>
+                        </div>
+                        <div class="card-subtitle">
+                            Meta Anual: ${meta.anual} <br>
+                            Se destina de los 100k: ${formatoMoneda(meta.cuotaMes)} al mes
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:${porcentaje}%"></div></div>
+                    </div>
+                `;
+            });
+        }
     </script>
 </body>
 </html>
