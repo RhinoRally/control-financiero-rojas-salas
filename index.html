@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Control Financiero Rojas Salas</title>
+    <style>
+        /* Diseño visual optimizado para móviles (Modo Oscuro) */
+        :root {
+            --bg-color: #000000;
+            --card-bg: #1C1C1E;
+            --text-main: #FFFFFF;
+            --text-muted: #8E8E93;
+            --accent: #E91E63; /* Color rosa similar al de Glide */
+            --nav-bg: #121212;
+            --border: #2C2C2E;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 80px; }
+        
+        /* Encabezado */
+        header { background-color: var(--card-bg); padding: 15px; text-align: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;}
+        h1 { font-size: 1.2rem; font-weight: 600; }
+        
+        /* Contenedores de pantallas */
+        .screen { display: none; padding: 15px; }
+        .screen.active { display: block; }
+        
+        /* Tarjetas (Cards) */
+        .card { background-color: var(--card-bg); border-radius: 10px; padding: 15px; margin-bottom: 12px; border: 1px solid var(--border); }
+        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 5px; display: flex; justify-content: space-between; }
+        .card-subtitle { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px; }
+        .monto { font-weight: bold; color: var(--accent); font-size: 1.2rem; }
+        
+        /* Botón Flotante (Add) */
+        .btn-add { background-color: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 1rem; cursor: pointer; float: right; margin-bottom: 15px;}
+        
+        /* Formularios y Cajas de texto */
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
+        input, select { width: 100%; background-color: #2C2C2E; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 1rem; }
+        input:focus, select:focus { outline: 1px solid var(--accent); }
+        
+        .btn-submit { width: 100%; background-color: var(--accent); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 10px;}
+        
+        /* Menú de Navegación Inferior */
+        nav { position: fixed; bottom: 0; width: 100%; background-color: var(--nav-bg); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0 20px 0; z-index: 100;}
+        .nav-item { color: var(--text-muted); text-align: center; font-size: 0.8rem; cursor: pointer; flex: 1;}
+        .nav-item.active { color: var(--accent); font-weight: bold; }
+        .nav-icon { font-size: 1.5rem; display: block; margin-bottom: 3px; }
+        
+        /* Panel del BCCR */
+        .bccr-panel { background-color: #1A1A24; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid var(--accent); }
+        .bccr-panel input { background-color: #000; margin-top: 10px;}
+        
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200; padding: 20px; overflow-y: auto;}
+        .modal-content { background: var(--bg-color); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-top: 10px;}
+        .close-modal { color: var(--text-muted); float: right; font-size: 28px; font-weight: bold; cursor: pointer; margin-top: -10px;}
+        
+        /* Reportes */
+        .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .report-box { background: var(--card-bg); padding: 15px; border-radius: 10px; text-align: center; }
+        .report-box h3 { font-size: 0.9rem; color: var(--text-muted); }
+        .report-box p { font-size: 1.2rem; font-weight: bold; color: white; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>App Financiera CCSS</h1>
+    </header>
+
+    <!-- PANTALLA: GASTOS ORDINARIOS -->
+    <div id="pantalla-gastos" class="screen active">
+        <button class="btn-add" onclick="abrirModalGasto()">+ Add</button>
+        <div style="clear: both; margin-bottom: 10px;"></div>
+        <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Gastos Ordinarios</h2>
+        <div id="lista-gastos"></div>
+    </div>
+
+    <!-- PANTALLA: PROVISIONES Pediahorro -->
+    <div id="pantalla-provisiones" class="screen">
+        <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Provisiones PediAhorro</h2>
+        
+        <div class="bccr-panel">
+            <label>Tipo de Cambio BCCR (Venta):</label>
+            <input type="number" id="input-bccr" placeholder="Ej. 515.00" onchange="guardarBCCR()">
+        </div>
+
+        <div id="lista-provisiones"></div>
+    </div>
+
+    <!-- PANTALLA: REPORTES -->
+    <div id="pantalla-reportes" class="screen">
+        <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Reportes de Gastos</h2>
+        <div class="report-grid">
+            <div class="report-box">
+                <h3>Este Mes</h3>
+                <p id="rep-mes">₡0</p>
+            </div>
+            <div class="report-box">
+                <h3>Este Año</h3>
+                <p id="rep-anio">₡0</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVEGACIÓN INFERIOR -->
+    <nav>
+        <div class="nav-item active" onclick="cambiarPantalla('gastos', this)">
+            <span class="nav-icon">🧾</span>Gastos
+        </div>
+        <div class="nav-item" onclick="cambiarPantalla('provisiones', this)">
+            <span class="nav-icon">🏦</span>Provisiones
+        </div>
+        <div class="nav-item" onclick="cambiarPantalla('reportes', this)">
+            <span class="nav-icon">📊</span>Reportes
+        </div>
+    </nav>
+
+    <!-- MODAL AGREGAR GASTO -->
+    <div id="modal-gasto" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="cerrarModalGasto()">&times;</span>
+            <h2 style="margin-bottom: 20px;">Añadir Gasto</h2>
+            
+            <div class="input-group">
+                <label>Concepto / Descripción</label>
+                <input type="text" id="g-desc" placeholder="Ej. Útiles escolares">
+            </div>
+            <div class="input-group">
+                <label>Monto (₡)</label>
+                <input type="number" id="g-monto" placeholder="0.00">
+            </div>
+            <div class="input-group">
+                <label>Categoría</label>
+                <select id="g-cat">
+                    <option>Educación</option>
+                    <option>Alimentación en casa</option>
+                    <option>Alimentación fuera de casa</option>
+                    <option>Paseos o viajes</option>
+                    <option>Salud y Medicamentos</option>
+                    <option>Transporte</option>
+                    <option>Otros</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Fecha</label>
+                <input type="date" id="g-fecha">
+            </div>
+            
+            <button class="btn-submit" onclick="guardarGasto()">Guardar Gasto</button>
+        </div>
+    </div>
+
+    <script>
+        // Lógica de Datos usando LocalStorage para que la info no se borre
+        
+        // 1. Inicializar Datos Base (Provisiones)
+        let provisionesBase = [
+            { id: 1, concepto: "Seguro BMI", anual: 833.00, cuota: 69.42, moneda: "USD", inicio: "2026-01-01", limite: "20/jun" },
+            { id: 2, concepto: "Seguro Quálitas", anual: 450000, cuota: 37500, moneda: "CRC", inicio: "2026-01-01", limite: "26/jul" },
+            { id: 3, concepto: "Marchamo", anual: 263000, cuota: 21916, moneda: "CRC", inicio: "2026-01-01", limite: "31/dic" }
+        ];
+
+        // Cargar datos guardados
+        let gastos = JSON.parse(localStorage.getItem('crs_gastos')) || [];
+        let tipoCambio = parseFloat(localStorage.getItem('crs_bccr')) || 515.00;
+
+        // Configurar UI inicial
+        document.getElementById('input-bccr').value = tipoCambio;
+        document.getElementById('g-fecha').valueAsDate = new Date();
+
+        // 2. Funciones de Navegación
+        function cambiarPantalla(pantallaId, elementoMenu) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById('pantalla-' + pantallaId).classList.add('active');
+            elementoMenu.classList.add('active');
+
+            if(pantallaId === 'gastos') renderGastos();
+            if(pantallaId === 'provisiones') renderProvisiones();
+            if(pantallaId === 'reportes') calcularReportes();
+        }
+
+        // 3. Funciones del BCCR
+        function guardarBCCR() {
+            tipoCambio = parseFloat(document.getElementById('input-bccr').value) || 0;
+            localStorage.setItem('crs_bccr', tipoCambio);
+            renderProvisiones(); // Recalcula si estás en esa pantalla
+        }
+
+        // 4. Lógica de Provisiones (Cálculo del Saldo Teórico)
+        function renderProvisiones() {
+            const contenedor = document.getElementById('lista-provisiones');
+            contenedor.innerHTML = '';
+            const hoy = new Date();
+
+            provisionesBase.forEach(prov => {
+                // Calcular meses transcurridos
+                const fechaInicio = new Date(prov.inicio);
+                const diasTranscurridos = (hoy - fechaInicio) / (1000 * 60 * 60 * 24);
+                let mesesTranscurridos = diasTranscurridos / 30.4;
+                if(mesesTranscurridos < 0) mesesTranscurridos = 0;
+
+                // Calcular saldo
+                let saldoAcumulado = prov.cuota * mesesTranscurridos;
+                
+                // Conversión si es en dólares
+                let montoMostrar = saldoAcumulado;
+                let simbolo = "₡";
+                
+                if(prov.moneda === "USD") {
+                    montoMostrar = saldoAcumulado * tipoCambio;
+                }
+
+                // Formatear moneda
+                let formateado = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(montoMostrar);
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-title">
+                        <span>${prov.concepto}</span>
+                        <span style="font-size:0.8rem; color:var(--text-muted)">Límite: ${prov.limite}</span>
+                    </div>
+                    <div class="card-subtitle">Cuota mensual: ${prov.moneda === 'USD' ? '$' : '₡'}${prov.cuota}</div>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                        <span style="font-size: 0.85rem; color:var(--text-muted);">Saldo Teórico Ideal:</span>
+                        <span class="monto">${formateado}</span>
+                    </div>
+                `;
+                contenedor.appendChild(card);
+            });
+        }
+
+        // 5. Lógica de Gastos Ordinarios
+        function abrirModalGasto() { document.getElementById('modal-gasto').style.display = 'block'; }
+        function cerrarModalGasto() { document.getElementById('modal-gasto').style.display = 'none'; }
+
+        function guardarGasto() {
+            const desc = document.getElementById('g-desc').value;
+            const monto = parseFloat(document.getElementById('g-monto').value);
+            const cat = document.getElementById('g-cat').value;
+            const fecha = document.getElementById('g-fecha').value;
+
+            if(!desc || !monto || !fecha) {
+                alert("Por favor, completa la descripción y el monto.");
+                return;
+            }
+
+            const nuevoGasto = { id: Date.now(), desc, monto, cat, fecha };
+            gastos.push(nuevoGasto);
+            localStorage.setItem('crs_gastos', JSON.stringify(gastos));
+            
+            // Limpiar formulario y cerrar
+            document.getElementById('g-desc').value = '';
+            document.getElementById('g-monto').value = '';
+            cerrarModalGasto();
+            renderGastos();
+        }
+
+        function renderGastos() {
+            const contenedor = document.getElementById('lista-gastos');
+            contenedor.innerHTML = '';
+            
+            // Ordenar por fecha más reciente
+            const gastosOrdenados = [...gastos].sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+
+            if(gastosOrdenados.length === 0) {
+                contenedor.innerHTML = '<p style="color:var(--text-muted); text-align:center; margin-top:30px;">Aún no hay gastos registrados.</p>';
+                return;
+            }
+
+            gastosOrdenados.forEach(g => {
+                let formateado = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(g.monto);
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-title">
+                        <span>${g.desc}</span>
+                        <span class="monto">${formateado}</span>
+                    </div>
+                    <div class="card-subtitle" style="margin-bottom:0;">
+                        <span>${g.cat}</span> • <span>${g.fecha}</span>
+                    </div>
+                `;
+                contenedor.appendChild(card);
+            });
+        }
+
+        // 6. Lógica de Reportes
+        function calcularReportes() {
+            const hoy = new Date();
+            const mesActual = hoy.getMonth();
+            const anioActual = hoy.getFullYear();
+
+            let totalMes = 0;
+            let totalAnio = 0;
+
+            gastos.forEach(g => {
+                const fechaGasto = new Date(g.fecha + "T00:00:00");
+                if (fechaGasto.getFullYear() === anioActual) {
+                    totalAnio += g.monto;
+                    if (fechaGasto.getMonth() === mesActual) {
+                        totalMes += g.monto;
+                    }
+                }
+            });
+
+            const fmt = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' });
+            document.getElementById('rep-mes').innerText = fmt.format(totalMes);
+            document.getElementById('rep-anio').innerText = fmt.format(totalAnio);
+        }
+
+        // Iniciar
+        renderGastos();
+    </script>
+</body>
+</html>
