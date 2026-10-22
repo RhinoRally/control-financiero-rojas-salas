@@ -86,8 +86,8 @@
         <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Provisiones PediAhorro</h2>
         
         <div class="bccr-panel">
-            <label>Tipo de Cambio (Aut. Hacienda / Manual):</label>
-            <input type="number" id="input-bccr" placeholder="Consultando..." onchange="guardarBCCR()">
+            <label>Tipo de Cambio Venta (Automático/Manual):</label>
+            <input type="number" id="input-bccr" placeholder="Consultando BCCR..." onchange="guardarBCCR()">
         </div>
 
         <button class="btn-full" onclick="registrarAportePediahorro()">➕ Registrar Aporte Mensual (₡100,000)</button>
@@ -106,7 +106,7 @@
 
     <!-- CATEGORÍAS Y AJUSTES -->
     <div id="pantalla-ajustes" class="screen">
-        <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Gestión de Categorías</h2>
+        <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Gestión de Categorías (Gastos)</h2>
         <div class="input-group" style="display:flex; gap:10px;">
             <input type="text" id="nueva-cat" placeholder="Nueva categoría...">
             <button onclick="agregarCategoria()" style="background:var(--ingreso); color:white; border:none; border-radius:8px; padding:0 15px; font-weight:bold;">Añadir</button>
@@ -164,9 +164,28 @@
         <div class="modal-content">
             <span class="close-modal" onclick="cerrarModal('modal-ingreso')">&times;</span>
             <h2 style="margin-bottom: 20px;">Añadir Ingreso</h2>
-            <div class="input-group"><label>Concepto (Ej. Salario CCSS)</label><input type="text" id="i-desc"></div>
-            <div class="input-group"><label>Monto (₡)</label><input type="number" id="i-monto"></div>
-            <div class="input-group"><label>Fecha</label><input type="date" id="i-fecha"></div>
+            <div class="input-group">
+                <label>Detalle / Origen</label>
+                <input type="text" id="i-desc" placeholder="Ej. Quincena 1, Paciente...">
+            </div>
+            <div class="input-group">
+                <label>Categoría</label>
+                <select id="i-cat">
+                    <option>Salario CCSS</option>
+                    <option>Asistencia Cirugías</option>
+                    <option>Honorarios Profesionales</option>
+                    <option>Rendimientos / Intereses</option>
+                    <option>Otros</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Monto (₡)</label>
+                <input type="number" id="i-monto">
+            </div>
+            <div class="input-group">
+                <label>Fecha</label>
+                <input type="date" id="i-fecha">
+            </div>
             <button class="btn-submit bg-ingreso" onclick="guardarRegistro('ingresos')">Guardar Ingreso</button>
         </div>
     </div>
@@ -197,7 +216,7 @@
                 "Gasolina de carro", "Paseos o viajes", "Salud y Medicamentos", "Servicios Públicos", "Transporte", "Otros"
             ],
             aportesPediAhorro: parseInt(localStorage.getItem('crs_aportes')) || 0,
-            tipoCambio: parseFloat(localStorage.getItem('crs_bccr')) || 515.00
+            tipoCambio: parseFloat(localStorage.getItem('crs_bccr')) || null
         };
 
         const formatoMoneda = (monto) => new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(monto);
@@ -205,197 +224,21 @@
         // 2. INICIALIZACIÓN
         window.onload = () => {
             obtenerTipoCambio();
-            document.getElementById('input-bccr').value = datos.tipoCambio;
+            if(datos.tipoCambio) {
+                document.getElementById('input-bccr').value = datos.tipoCambio;
+            }
             document.getElementById('g-fecha').valueAsDate = new Date();
             document.getElementById('i-fecha').valueAsDate = new Date();
             actualizarUI();
         };
 
-        // 3. OBTENER TIPO DE CAMBIO (API Hacienda CR)
+        // 3. OBTENER TIPO DE CAMBIO
         async function obtenerTipoCambio() {
             try {
-                const response = await fetch('https://api.hacienda.go.cr/indicadores/tc');
-                const data = await response.json();
-                if(data && data.venta && data.venta.valor) {
-                    datos.tipoCambio = data.venta.valor;
+                // Intento 1: API pública de Costa Rica
+                const resCR = await fetch('https://tipodecambio.paginasweb.cr/api');
+                const dataCR = await resCR.json();
+                if(dataCR && dataCR.venta) {
+                    datos.tipoCambio = dataCR.venta;
                     document.getElementById('input-bccr').value = datos.tipoCambio;
-                    guardarBCCR();
-                }
-            } catch (error) {
-                console.log("Usando tipo de cambio guardado o manual.");
-            }
-        }
-
-        function guardarBCCR() {
-            datos.tipoCambio = parseFloat(document.getElementById('input-bccr').value) || 515.00;
-            localStorage.setItem('crs_bccr', datos.tipoCambio);
-            renderProvisiones();
-        }
-
-        // 4. NAVEGACIÓN Y UI
-        function cambiarPantalla(pantallaId, elementoMenu) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById('pantalla-' + pantallaId).classList.add('active');
-            elementoMenu.classList.add('active');
-            actualizarUI();
-        }
-
-        function abrirModal(id) { document.getElementById(id).style.display = 'block'; }
-        function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
-
-        // 5. RENDERIZADO GENERAL
-        function actualizarUI() {
-            renderListas('gastos');
-            renderListas('ingresos');
-            renderListas('patrimonio');
-            renderCategorias();
-            renderProvisiones();
-        }
-
-        function renderListas(tipo) {
-            const contenedor = document.getElementById('lista-' + tipo);
-            contenedor.innerHTML = '';
-            
-            const listaOrdenada = [...datos[tipo]].sort((a,b) => b.id - a.id); // Más recientes primero
-
-            if(listaOrdenada.length === 0) {
-                contenedor.innerHTML = '<p style="color:var(--text-muted); text-align:center;">No hay registros aún.</p>';
-                return;
-            }
-
-            listaOrdenada.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                let montoClase = tipo === 'gastos' ? 'gasto' : tipo === 'ingresos' ? 'ingreso' : 'neutro';
-                let prefijo = item.moneda === 'USD' ? '$' : '₡';
-                let montoDisplay = item.moneda === 'USD' ? `${prefijo}${item.monto}` : formatoMoneda(item.monto);
-                
-                card.innerHTML = `
-                    <div class="card-title">
-                        <span>${item.desc}</span>
-                        <span class="monto ${montoClase}">${montoDisplay}</span>
-                    </div>
-                    <div class="card-subtitle" style="margin-bottom:0;">
-                        ${item.cat ? `<span>${item.cat}</span> • ` : ''} <span>${item.fecha || item.moneda}</span>
-                    </div>
-                `;
-                contenedor.appendChild(card);
-            });
-        }
-
-        // 6. GUARDAR REGISTROS (Gastos, Ingresos, Patrimonio)
-        function guardarRegistro(tipo) {
-            let prefijo = tipo === 'gastos' ? 'g' : tipo === 'ingresos' ? 'i' : 'p';
-            let desc = document.getElementById(prefijo + '-desc').value;
-            let monto = parseFloat(document.getElementById(prefijo + '-monto').value);
-            
-            if(!desc || !monto) { alert("Completa los campos."); return; }
-
-            let nuevo = { id: Date.now(), desc, monto };
-            if(tipo === 'gastos') {
-                nuevo.cat = document.getElementById('g-cat').value;
-                nuevo.fecha = document.getElementById('g-fecha').value;
-            } else if(tipo === 'ingresos') {
-                nuevo.fecha = document.getElementById('i-fecha').value;
-            } else if(tipo === 'patrimonio') {
-                nuevo.moneda = document.getElementById('p-moneda').value;
-            }
-
-            datos[tipo].push(nuevo);
-            localStorage.setItem('crs_' + tipo, JSON.stringify(datos[tipo]));
-            
-            document.getElementById(prefijo + '-desc').value = '';
-            document.getElementById(prefijo + '-monto').value = '';
-            cerrarModal('modal-' + tipo);
-            actualizarUI();
-        }
-
-        // 7. CATEGORÍAS
-        function renderCategorias() {
-            // Actualizar select de gastos
-            const selectCat = document.getElementById('g-cat');
-            selectCat.innerHTML = '';
-            datos.categorias.sort().forEach(cat => {
-                selectCat.innerHTML += `<option value="${cat}">${cat}</option>`;
-            });
-
-            // Actualizar UI de ajustes
-            const divCat = document.getElementById('lista-categorias-ui');
-            divCat.innerHTML = '';
-            datos.categorias.forEach((cat, index) => {
-                divCat.innerHTML += `<div class="cat-item"><span>${cat}</span> <span class="cat-del" onclick="borrarCategoria(${index})">X</span></div>`;
-            });
-        }
-
-        function agregarCategoria() {
-            let nueva = document.getElementById('nueva-cat').value.trim();
-            if(nueva && !datos.categorias.includes(nueva)) {
-                datos.categorias.push(nueva);
-                localStorage.setItem('crs_categorias', JSON.stringify(datos.categorias));
-                document.getElementById('nueva-cat').value = '';
-                actualizarUI();
-            }
-        }
-        function borrarCategoria(index) {
-            datos.categorias.splice(index, 1);
-            localStorage.setItem('crs_categorias', JSON.stringify(datos.categorias));
-            actualizarUI();
-        }
-
-        // 8. LÓGICA PEDIAHORRO
-        function registrarAportePediahorro() {
-            if(confirm("Esto registrará un gasto de ₡100,000 y sumará 1 mes al acumulado de ahorro. ¿Continuar?")) {
-                // Agregar el gasto global
-                datos.gastos.push({
-                    id: Date.now(), desc: "Transferencia PediAhorro", monto: 100000, 
-                    cat: "Ahorro/Inversión", fecha: new Date().toISOString().split('T')[0]
-                });
-                localStorage.setItem('crs_gastos', JSON.stringify(datos.gastos));
-                
-                // Sumar aporte
-                datos.aportesPediAhorro++;
-                localStorage.setItem('crs_aportes', datos.aportesPediAhorro);
-                
-                actualizarUI();
-            }
-        }
-
-        function renderProvisiones() {
-            document.getElementById('contador-aportes').innerText = datos.aportesPediAhorro;
-            const contenedor = document.getElementById('lista-provisiones');
-            contenedor.innerHTML = '';
-
-            // Definición de las 3 metas
-            const cuotaBMI_USD = 69.42; // $833 anual / 12
-            const cuotaBMI_CRC = cuotaBMI_USD * datos.tipoCambio;
-            
-            const metas = [
-                { nombre: "Seguro BMI", anual: "USD $833", metaNum: cuotaBMI_CRC * 12, cuotaMes: cuotaBMI_CRC },
-                { nombre: "Seguro Quálitas", anual: "₡450,000", metaNum: 450000, cuotaMes: 37500 },
-                { nombre: "Marchamo", anual: "₡263,000", metaNum: 263000, cuotaMes: 21916 }
-            ];
-
-            metas.forEach(meta => {
-                let ahorrado = meta.cuotaMes * datos.aportesPediAhorro;
-                let porcentaje = (ahorrado / meta.metaNum) * 100;
-                if(porcentaje > 100) porcentaje = 100;
-
-                contenedor.innerHTML += `
-                    <div class="card">
-                        <div class="card-title">
-                            <span>${meta.nombre}</span>
-                            <span class="monto neutro">${formatoMoneda(ahorrado)}</span>
-                        </div>
-                        <div class="card-subtitle">
-                            Meta Anual: ${meta.anual} <br>
-                            Se destina de los 100k: ${formatoMoneda(meta.cuotaMes)} al mes
-                        </div>
-                        <div class="progress-bar"><div class="progress-fill" style="width:${porcentaje}%"></div></div>
-                    </div>
-                `;
-            });
-        }
-    </script>
-</body>
-</html>
+                    guardarBCCR
