@@ -7,7 +7,7 @@
     <style>
         :root {
             --bg-color: #000000; --card-bg: #1C1C1E; --text-main: #FFFFFF; --text-muted: #8E8E93;
-            --accent: #E91E63; --ingreso: #34C759; --nav-bg: #121212; --border: #2C2C2E;
+            --accent: #E91E63; --ingreso: #34C759; --patri: #0A84FF; --nav-bg: #121212; --border: #2C2C2E;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 80px; }
@@ -25,12 +25,12 @@
         .monto { font-weight: bold; font-size: 1.1rem; }
         .monto.gasto { color: var(--accent); }
         .monto.ingreso { color: var(--ingreso); }
-        .monto.neutro { color: #0A84FF; }
+        .monto.neutro { color: var(--patri); }
         
         .btn-add { background-color: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 1rem; cursor: pointer; float: right; margin-bottom: 15px;}
         .btn-add.ingreso-btn { background-color: var(--ingreso); }
-        .btn-add.patri-btn { background-color: #0A84FF; }
-        .btn-full { width: 100%; background-color: #0A84FF; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 15px;}
+        .btn-add.patri-btn { background-color: var(--patri); }
+        .btn-full { width: 100%; background-color: var(--patri); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 15px;}
         
         .input-group { margin-bottom: 15px; }
         label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
@@ -39,24 +39,24 @@
         .btn-submit { width: 100%; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 10px;}
         .bg-gasto { background-color: var(--accent); }
         .bg-ingreso { background-color: var(--ingreso); }
-        .bg-patri { background-color: #0A84FF; }
+        .bg-patri { background-color: var(--patri); }
         
         nav { position: fixed; bottom: 0; width: 100%; background-color: var(--nav-bg); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0 20px 0; z-index: 100;}
         .nav-item { color: var(--text-muted); text-align: center; font-size: 0.75rem; cursor: pointer; flex: 1;}
         .nav-item.active { color: var(--accent); font-weight: bold; }
         .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 3px; }
         
-        .bccr-panel { background-color: #1A1A24; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #0A84FF; }
+        .panel-destacado { background-color: #1A1A24; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid var(--patri); }
         
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200; padding: 20px; overflow-y: auto;}
         .modal-content { background: var(--bg-color); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-top: 10px;}
         .close-modal { color: var(--text-muted); float: right; font-size: 28px; font-weight: bold; cursor: pointer; margin-top: -10px;}
         
-        .cat-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border);}
-        .cat-del { color: var(--accent); cursor: pointer; font-weight: bold;}
-
-        .progress-bar { width: 100%; background-color: #2C2C2E; border-radius: 5px; height: 10px; margin-top: 10px; overflow: hidden;}
-        .progress-fill { height: 100%; background-color: #34C759; width: 0%; transition: width 0.3s;}
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .box-proy { background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid #3A3A3C; text-align: center;}
+        .box-proy span { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;}
+        .box-proy strong { font-size: 1.1rem; color: #FFF; }
+        .box-proy.highlight strong { color: var(--ingreso); }
     </style>
 </head>
 <body>
@@ -85,12 +85,12 @@
     <div id="pantalla-provisiones" class="screen">
         <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Provisiones PediAhorro</h2>
         
-        <div class="bccr-panel">
+        <div class="panel-destacado" style="border-left-color: var(--accent);">
             <label>Tipo de Cambio Venta (Automático/Manual):</label>
             <input type="number" id="input-bccr" placeholder="Consultando BCCR..." onchange="guardarBCCR()">
         </div>
 
-        <button class="btn-full" onclick="registrarAportePediahorro()">➕ Registrar Aporte Mensual (₡100,000)</button>
+        <button class="btn-full" style="background-color: var(--accent);" onclick="registrarAportePediahorro()">➕ Registrar Aporte Mensual (₡100,000)</button>
         <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; text-align: center;">Meses aportados: <span id="contador-aportes" style="color:white; font-weight:bold;">0</span></p>
 
         <div id="lista-provisiones"></div>
@@ -98,15 +98,44 @@
 
     <!-- PATRIMONIO / INVERSIONES -->
     <div id="pantalla-patrimonio" class="screen">
-        <button class="btn-add patri-btn" onclick="abrirModal('modal-patri')">+ Activo</button>
+        <button class="btn-add patri-btn" onclick="abrirModal('modal-patri')">+ Aporte</button>
         <div style="clear: both; margin-bottom: 10px;"></div>
-        <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Patrimonio e Inversiones</h2>
+        <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Inversiones y Patrimonio</h2>
+        
+        <!-- PANEL PROYECCIONES CCSS -->
+        <div class="panel-destacado">
+            <h3 style="font-size: 1rem; margin-bottom: 10px; color: var(--patri);">Estimador de Beneficios CCSS</h3>
+            <div class="input-group">
+                <label>Salario Mensual Promedio (Base Estimación):</label>
+                <input type="number" id="proy-salario" placeholder="₡..." onchange="calcularProyecciones()">
+            </div>
+            <div class="grid-2" style="margin-top:0;">
+                <div class="input-group">
+                    <label>Saldo ASECCSS:</label>
+                    <input type="number" id="proy-aseccss" placeholder="₡..." onchange="calcularProyecciones()">
+                </div>
+                <div class="input-group">
+                    <label>Saldo FRAP:</label>
+                    <input type="number" id="proy-frap" placeholder="₡..." onchange="calcularProyecciones()">
+                </div>
+            </div>
+            
+            <div class="grid-2">
+                <div class="box-proy highlight"><span>Aguinaldo Est.</span><strong id="res-aguinaldo">₡0</strong></div>
+                <div class="box-proy highlight"><span>Sal. Escolar Est.</span><strong id="res-escolar">₡0</strong></div>
+                <div class="box-proy"><span>Vacaciones (30d)</span><strong id="res-vacaciones">₡0</strong></div>
+                <div class="box-proy"><span>Dividendos ASECCSS</span><strong id="res-aseccss">₡0</strong></div>
+                <div class="box-proy"><span>Excedentes FRAP</span><strong id="res-frap">₡0</strong></div>
+            </div>
+            <p style="font-size: 0.7rem; color: #666; margin-top:10px; text-align:center;">*Proyecciones estimadas según fórmulas estándar. ASECCSS (~6%), FRAP (~5.5%).</p>
+        </div>
+
         <div id="lista-patrimonio"></div>
     </div>
 
-    <!-- CATEGORÍAS Y AJUSTES -->
+    <!-- CATEGORÍAS -->
     <div id="pantalla-ajustes" class="screen">
-        <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Gestión de Categorías (Gastos)</h2>
+        <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Categorías (Gastos)</h2>
         <div class="input-group" style="display:flex; gap:10px;">
             <input type="text" id="nueva-cat" placeholder="Nueva categoría...">
             <button onclick="agregarCategoria()" style="background:var(--ingreso); color:white; border:none; border-radius:8px; padding:0 15px; font-weight:bold;">Añadir</button>
@@ -116,97 +145,75 @@
 
     <!-- NAVEGACIÓN -->
     <nav>
-        <div class="nav-item active" onclick="cambiarPantalla('gastos', this)">
-            <span class="nav-icon">📉</span>Gastos
-        </div>
-        <div class="nav-item" onclick="cambiarPantalla('ingresos', this)">
-            <span class="nav-icon">📈</span>Ingresos
-        </div>
-        <div class="nav-item" onclick="cambiarPantalla('provisiones', this)">
-            <span class="nav-icon">🏦</span>Ahorro
-        </div>
-        <div class="nav-item" onclick="cambiarPantalla('patrimonio', this)">
-            <span class="nav-icon">💰</span>Patrimonio
-        </div>
-        <div class="nav-item" onclick="cambiarPantalla('ajustes', this)">
-            <span class="nav-icon">⚙️</span>Ajustes
-        </div>
+        <div class="nav-item active" onclick="cambiarPantalla('gastos', this)"><span class="nav-icon">📉</span>Gastos</div>
+        <div class="nav-item" onclick="cambiarPantalla('ingresos', this)"><span class="nav-icon">📈</span>Ingresos</div>
+        <div class="nav-item" onclick="cambiarPantalla('provisiones', this)"><span class="nav-icon">🏦</span>Ahorro</div>
+        <div class="nav-item" onclick="cambiarPantalla('patrimonio', this)"><span class="nav-icon">💰</span>Inversión</div>
+        <div class="nav-item" onclick="cambiarPantalla('ajustes', this)"><span class="nav-icon">⚙️</span>Ajustes</div>
     </nav>
 
-    <!-- MODALES -->
-    <!-- Modal Gasto -->
+    <!-- MODAL GASTO -->
     <div id="modal-gasto" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="cerrarModal('modal-gasto')">&times;</span>
             <h2 style="margin-bottom: 20px;">Añadir Gasto</h2>
-            <div class="input-group">
-                <label>Concepto</label>
-                <input type="text" id="g-desc">
-            </div>
-            <div class="input-group">
-                <label>Monto (₡)</label>
-                <input type="number" id="g-monto">
-            </div>
-            <div class="input-group">
-                <label>Categoría</label>
-                <select id="g-cat"></select>
-            </div>
-            <div class="input-group">
-                <label>Fecha</label>
-                <input type="date" id="g-fecha">
-            </div>
+            <div class="input-group"><label>Concepto</label><input type="text" id="g-desc"></div>
+            <div class="input-group"><label>Monto (₡)</label><input type="number" id="g-monto"></div>
+            <div class="input-group"><label>Categoría</label><select id="g-cat"></select></div>
+            <div class="input-group"><label>Fecha</label><input type="date" id="g-fecha"></div>
             <button class="btn-submit bg-gasto" onclick="guardarRegistro('gastos')">Guardar Gasto</button>
         </div>
     </div>
 
-    <!-- Modal Ingreso -->
+    <!-- MODAL INGRESO -->
     <div id="modal-ingreso" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="cerrarModal('modal-ingreso')">&times;</span>
             <h2 style="margin-bottom: 20px;">Añadir Ingreso</h2>
-            <div class="input-group">
-                <label>Detalle / Origen</label>
-                <input type="text" id="i-desc" placeholder="Ej. Quincena 1, Paciente...">
-            </div>
+            <div class="input-group"><label>Detalle</label><input type="text" id="i-desc"></div>
             <div class="input-group">
                 <label>Categoría</label>
                 <select id="i-cat">
-                    <option>Salario CCSS</option>
-                    <option>Asistencia Cirugías</option>
-                    <option>Honorarios Profesionales</option>
-                    <option>Rendimientos / Intereses</option>
-                    <option>Otros</option>
+                    <option>Salario CCSS</option><option>Asistencia Cirugías</option>
+                    <option>Honorarios Profesionales</option><option>Rendimientos / Intereses</option><option>Otros</option>
                 </select>
             </div>
-            <div class="input-group">
-                <label>Monto (₡)</label>
-                <input type="number" id="i-monto">
-            </div>
-            <div class="input-group">
-                <label>Fecha</label>
-                <input type="date" id="i-fecha">
-            </div>
+            <div class="input-group"><label>Monto (₡)</label><input type="number" id="i-monto"></div>
+            <div class="input-group"><label>Fecha</label><input type="date" id="i-fecha"></div>
             <button class="btn-submit bg-ingreso" onclick="guardarRegistro('ingresos')">Guardar Ingreso</button>
         </div>
     </div>
 
-    <!-- Modal Patrimonio -->
+    <!-- MODAL PATRIMONIO/INVERSIONES -->
     <div id="modal-patri" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="cerrarModal('modal-patri')">&times;</span>
-            <h2 style="margin-bottom: 20px;">Añadir Activo/Inversión</h2>
-            <div class="input-group"><label>Instrumento (Ej. CDP, Fondo)</label><input type="text" id="p-desc"></div>
-            <div class="input-group"><label>Monto</label><input type="number" id="p-monto"></div>
+            <h2 style="margin-bottom: 20px;">Añadir a Inversiones</h2>
+            <div class="input-group">
+                <label>Institución / Fondo</label>
+                <select id="p-inst">
+                    <option value="Friends Provident">Friends Provident</option>
+                    <option value="RL360">RL360</option>
+                    <option value="Utmost">Utmost</option>
+                    <option value="Transcomer">Transcomer</option>
+                    <option value="Coopemédicos (Cap. Social)">Coopemédicos (Capital Social)</option>
+                    <option value="ASECCSS">ASECCSS</option>
+                    <option value="FRAP">FRAP</option>
+                    <option value="Otra Inversión">Otra Inversión</option>
+                </select>
+            </div>
+            <div class="input-group"><label>Detalle / Nota (Opcional)</label><input type="text" id="p-desc" placeholder="Ej. Aporte ordinario"></div>
+            <div class="input-group"><label>Monto del Aporte</label><input type="number" id="p-monto"></div>
             <div class="input-group">
                 <label>Moneda</label>
-                <select id="p-moneda"><option>CRC</option><option>USD</option></select>
+                <select id="p-moneda"><option>USD</option><option>CRC</option></select>
             </div>
-            <button class="btn-submit bg-patri" onclick="guardarRegistro('patrimonio')">Guardar Patrimonio</button>
+            <button class="btn-submit bg-patri" onclick="guardarRegistro('patrimonio')">Guardar Aporte</button>
         </div>
     </div>
 
     <script>
-        // 1. GESTIÓN DE DATOS (LocalStorage)
+        // DATOS LOCALES
         let datos = {
             gastos: JSON.parse(localStorage.getItem('crs_gastos')) || [],
             ingresos: JSON.parse(localStorage.getItem('crs_ingresos')) || [],
@@ -216,29 +223,56 @@
                 "Gasolina de carro", "Paseos o viajes", "Salud y Medicamentos", "Servicios Públicos", "Transporte", "Otros"
             ],
             aportesPediAhorro: parseInt(localStorage.getItem('crs_aportes')) || 0,
-            tipoCambio: parseFloat(localStorage.getItem('crs_bccr')) || null
+            tipoCambio: parseFloat(localStorage.getItem('crs_bccr')) || null,
+            proyecciones: JSON.parse(localStorage.getItem('crs_proyecciones')) || { salario: '', aseccss: '', frap: '' }
         };
 
         const formatoMoneda = (monto) => new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(monto);
         
-        // 2. INICIALIZACIÓN
         window.onload = () => {
             obtenerTipoCambio();
-            if(datos.tipoCambio) {
-                document.getElementById('input-bccr').value = datos.tipoCambio;
-            }
+            if(datos.tipoCambio) document.getElementById('input-bccr').value = datos.tipoCambio;
             document.getElementById('g-fecha').valueAsDate = new Date();
             document.getElementById('i-fecha').valueAsDate = new Date();
+            
+            // Cargar datos de proyecciones guardados
+            document.getElementById('proy-salario').value = datos.proyecciones.salario;
+            document.getElementById('proy-aseccss').value = datos.proyecciones.aseccss;
+            document.getElementById('proy-frap').value = datos.proyecciones.frap;
+            
             actualizarUI();
+            calcularProyecciones();
         };
 
-        // 3. OBTENER TIPO DE CAMBIO
         async function obtenerTipoCambio() {
             try {
-                // Intento 1: API pública de Costa Rica
                 const resCR = await fetch('https://tipodecambio.paginasweb.cr/api');
                 const dataCR = await resCR.json();
                 if(dataCR && dataCR.venta) {
                     datos.tipoCambio = dataCR.venta;
                     document.getElementById('input-bccr').value = datos.tipoCambio;
-                    guardarBCCR
+                    guardarBCCR(); return;
+                }
+            } catch (e1) {
+                try {
+                    const resHac = await fetch('https://api.hacienda.go.cr/indicadores/tc');
+                    const dataHac = await resHac.json();
+                    if(dataHac && dataHac.venta && dataHac.venta.valor) {
+                        datos.tipoCambio = dataHac.venta.valor;
+                        document.getElementById('input-bccr').value = datos.tipoCambio;
+                        guardarBCCR();
+                    }
+                } catch(e2) { console.log("Usando TC manual."); }
+            }
+        }
+
+        function guardarBCCR() {
+            let valor = parseFloat(document.getElementById('input-bccr').value);
+            if(valor) {
+                datos.tipoCambio = valor;
+                localStorage.setItem('crs_bccr', datos.tipoCambio);
+                renderProvisiones();
+            }
+        }
+
+        function cambiarPantalla(pantallaId
